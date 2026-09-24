@@ -124,7 +124,29 @@ async function handleAnalyze(req, res) {
   }
 }
 
-app.get('/analyzetest', handleAnalyze);
+app.get('/analyzetest', async (req, res) => {
+  const msg = req.query.message || 'test';
+  try {
+    const response = await fetch('https://openrouter.ai/api/alpha/decisions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: '~typesafe/jev-latest',
+        state: msg,
+        questions: {
+          test: { type: 'noul', instructions: 'Is this a test?' }
+        }
+      })
+    });
+    const text = await response.text();
+    res.json({ status: response.status, body: text });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
 app.post('/analyzetest', handleAnalyze);
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
