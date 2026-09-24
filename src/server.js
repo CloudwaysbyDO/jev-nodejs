@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// ─── Health check (useful for debugging) ─────────────────────────────────────
+// ─── Health check ─────────────────────────────────────────────────────────────
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', port: PORT, timestamp: new Date().toISOString() });
@@ -44,7 +44,7 @@ function buildQuestions() {
       type: 'choice',
       instructions:
         'What is the urgency of this client request? ' +
-        'Consider impact on the client\'s business and any deadlines mentioned.',
+        "Consider impact on the client's business and any deadlines mentioned.",
       options: [
         { id: 'low', label: 'Low' },
         { id: 'medium', label: 'Medium' },
@@ -99,7 +99,7 @@ function parseAnswers(answers) {
       probability: pct(escalate.noul),
     },
     overallConfidence: Math.round(
-      (category.confidence + priority.confidence + team.confidence) / 3 * 100
+      ((category.confidence + priority.confidence + team.confidence) / 3) * 100
     ),
   };
 }
@@ -115,16 +115,20 @@ function pct(n) {
   return Math.round(n * 100);
 }
 
-// ─── API route ────────────────────────────────────────────────────────────────
+// ─── API route (GET so nginx passes it through) ───────────────────────────────
+// The message is sent as a query parameter: /api/analyze?message=...
+// We also support POST for local development.
 
-app.post('/api/analyze', async (req, res) => {
-  const { message } = req.body;
+async function handleAnalyze(req, res) {
+  const message = req.method === 'GET'
+    ? (req.query.message || '').trim()
+    : (req.body.message || '').trim();
 
-  if (!message || typeof message !== 'string' || message.trim().length === 0) {
+  if (!message) {
     return res.status(400).json({ error: 'Request message is required.' });
   }
 
-  if (message.trim().length > 4000) {
+  if (message.length > 4000) {
     return res.status(400).json({ error: 'Request message is too long (max 4000 characters).' });
   }
 
@@ -141,7 +145,7 @@ app.post('/api/analyze', async (req, res) => {
   const state =
     'You are triaging a client support request for a digital web agency. ' +
     'The client has sent the following message:\n\n' +
-    message.trim();
+    message;
 
   const questions = buildQuestions();
 
@@ -181,13 +185,15 @@ app.post('/api/analyze', async (req, res) => {
     console.error('[server] Failed to parse Jev response:', err.message, jevResponse);
     return res.status(502).json({ error: 'Unexpected response from the decision API.' });
   }
-});
+}
 
-// ─── Static files — served AFTER API routes ───────────────────────────────────
+// Register both GET and POST so it works on Cloudways (GET) and locally (POST)
+app.get('/api/analyze', handleAnalyze);
+app.post('/api/analyze', handleAnalyze);
+
+// ─── Static files ─────────────────────────────────────────────────────────────
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
-
-// ─── Catch-all: serve the SPA ─────────────────────────────────────────────────
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
@@ -197,6 +203,5 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Agency Request Triage running on 0.0.0.0:${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`API key configured: ${!!process.env.OPENROUTER_API_KEY}`);
 });
