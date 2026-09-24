@@ -124,8 +124,8 @@ async function handleAnalyze(req, res) {
   }
 }
 
-app.get('/analyze',  handleAnalyze);
-app.post('/analyze', handleAnalyze);
+app.get('/analyzetest', handleAnalyze);
+app.post('/analyzetest', handleAnalyze);
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.get('*', (req, res) => {
