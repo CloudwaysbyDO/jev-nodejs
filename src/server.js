@@ -167,6 +167,10 @@ app.get('/', (req, res, next) => {
 });
  
 // Also keep dedicated routes for direct testing
+app.get('/analyze/:msg', async (req, res) => {
+  req.query.message = req.params.msg;
+  return handleAnalyze(req, res);
+});
 app.get('/jevtest2', handleAnalyze);
 app.post('/jevtest2', handleAnalyze);
  
