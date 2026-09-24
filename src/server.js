@@ -72,7 +72,46 @@ function parseAnswers(answers) {
     overallConfidence: Math.round(((c.confidence + p.confidence + t.confidence) / 3) * 100),
   };
 }
+app.get('/steptest', async (req, res) => {
+  const results = { steps: [] };
+  try {
+    results.steps.push('1: route entered');
 
+    const message = (req.query.message || 'test').trim();
+    results.steps.push('2: message read: ' + message.slice(0, 30));
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    results.steps.push('3: key exists: ' + !!apiKey);
+
+    const questions = buildQuestions();
+    results.steps.push('4: questions built, count: ' + Object.keys(questions).length);
+
+    const body = JSON.stringify({ model: JEV_MODEL, state: message, questions: questions });
+    results.steps.push('5: body built, size: ' + body.length);
+
+    const response = await fetch(JEV_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    });
+    results.steps.push('6: fetch done, status: ' + response.status);
+
+    const text = await response.text();
+    results.steps.push('7: text read, size: ' + text.length);
+
+    results.jevStatus = response.status;
+    results.jevBody = text.slice(0, 800);
+
+    return res.json(results);
+  } catch (err) {
+    results.error = err.message;
+    results.errorName = err.name;
+    return res.json(results);
+  }
+});
 app.get('/analyzetest', async (req, res) => {
   const message = (req.query.message || '').trim();
   if (!message) return res.status(400).json({ error: 'Request message is required.' });
