@@ -94,7 +94,7 @@ async function analyze() {
 
   try {
     // Use GET with query parameter — works through Cloudways nginx
-    const url = '/api/analyze?message=' + encodeURIComponent(message);
+    const url = '/triage?message=' + encodeURIComponent(message);
     const res = await fetch(url, { method: 'GET' });
 
     const data = await res.json();
