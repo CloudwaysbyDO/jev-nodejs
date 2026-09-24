@@ -131,6 +131,10 @@ async function handleAnalyze(req, res) {
 // Health check
 app.get('/health', (req, res) => res.json({ ok: true, port: PORT }));
 
+app.get('/querytest', (req, res) => {
+  res.json({ received: req.query.message || 'nothing' });
+});
+
 app.get('/slowtest', async (req, res) => {
   await new Promise(r => setTimeout(r, 3000));
   res.json({ ok: true, waited: '3 seconds' });
