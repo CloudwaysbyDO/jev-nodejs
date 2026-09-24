@@ -130,6 +130,11 @@ async function handleAnalyze(req, res) {
  
 // Health check
 app.get('/health', (req, res) => res.json({ ok: true, port: PORT }));
+
+app.get('/slowtest', async (req, res) => {
+  await new Promise(r => setTimeout(r, 3000));
+  res.json({ ok: true, waited: '3 seconds' });
+});
  
 // The index page intercepts ?analyze=1 and returns JSON instead of HTML
 // This works because nginx DOES proxy the root path to Node.js
