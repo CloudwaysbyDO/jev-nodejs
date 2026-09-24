@@ -68,7 +68,7 @@ async function analyze() {
   showState('loading');
 
   try {
-    const url = '/analyze?message=' + encodeURIComponent(message);
+    const url = '/analyzetest?message=' + encodeURIComponent(message);
     const res = await fetch(url);
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
