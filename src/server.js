@@ -134,7 +134,37 @@ app.get('/health', (req, res) => res.json({ ok: true, port: PORT }));
 app.get('/querytest', (req, res) => {
   res.json({ received: req.query.message || 'nothing' });
 });
-
+app.get('/analyzetest', async (req, res) => {
+  const message = req.query.message || 'nothing';
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  try {
+    const response = await fetch('https://openrouter.ai/api/alpha/decisions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: '~typesafe/jev-latest',
+        state: message,
+        questions: {
+          category: {
+            type: 'choice',
+            instructions: 'What category is this?',
+            options: [
+              { id: 'technical', label: 'Technical' },
+              { id: 'other', label: 'Other' }
+            ]
+          }
+        }
+      })
+    });
+    const text = await response.text();
+    res.json({ status: response.status, body: text });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
 app.get('/slowtest', async (req, res) => {
   await new Promise(r => setTimeout(r, 3000));
   res.json({ ok: true, waited: '3 seconds' });
