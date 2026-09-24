@@ -135,6 +135,29 @@ app.get('/slowtest', async (req, res) => {
   await new Promise(r => setTimeout(r, 3000));
   res.json({ ok: true, waited: '3 seconds' });
 });
+
+app.get('/jevtest', async (req, res) => {
+  try {
+    const response = await fetch('https://openrouter.ai/api/alpha/decisions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: '~typesafe/jev-latest',
+        state: 'test',
+        questions: {
+          test: { type: 'noul', instructions: 'Is this a test?' }
+        }
+      })
+    });
+    const text = await response.text();
+    res.json({ status: response.status, body: text });
+  } catch (err) {
+    res.json({ error: err.message, name: err.name });
+  }
+});
  
 // The index page intercepts ?analyze=1 and returns JSON instead of HTML
 // This works because nginx DOES proxy the root path to Node.js
