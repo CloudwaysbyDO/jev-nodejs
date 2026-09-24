@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agency Request Triage</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div class="layout">
+
+    <!-- ── Header ── -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-dot"></span>
+          <span class="logo-text">Agency Triage</span>
+        </div>
+        <div class="header-badge">Powered by Jev</div>
+      </div>
+    </header>
+
+    <!-- ── Main ── -->
+    <main class="main">
+
+      <!-- Hero -->
+      <section class="hero">
+        <h1 class="hero-title">AI Client Request Triage</h1>
+        <p class="hero-subtitle">Turn messy client requests into clear, actionable decisions.</p>
+      </section>
+
+      <!-- Input card -->
+      <section class="card input-card">
+        <label class="input-label" for="request-input">Client request</label>
+        <textarea
+          id="request-input"
+          class="textarea"
+          rows="5"
+          placeholder="Paste the client's message here…"
+          maxlength="4000"
+          aria-label="Client request"
+        ></textarea>
+
+        <div class="input-actions">
+          <span class="char-count" id="char-count">0 / 4000</span>
+          <button class="btn btn-primary" id="analyze-btn" aria-label="Analyze request">
+            Analyze Request
+          </button>
+        </div>
+      </section>
+
+      <!-- Examples -->
+      <section class="examples">
+        <p class="examples-label">Try an example:</p>
+        <div class="example-list" id="example-list">
+          <button class="example-chip" data-example="checkout">
+            🔴 Checkout broken
+          </button>
+          <button class="example-chip" data-example="outage">
+            🚨 Site down
+          </button>
+          <button class="example-chip" data-example="design">
+            🎨 Button color change
+          </button>
+          <button class="example-chip" data-example="feature">
+            ✨ New booking form
+          </button>
+          <button class="example-chip" data-example="performance">
+            🐢 Slow loading
+          </button>
+        </div>
+      </section>
+
+      <!-- Results -->
+      <section id="results-section" class="results-section" aria-live="polite">
+
+        <!-- Loading -->
+        <div id="state-loading" class="state state-loading hidden">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Analyzing request…</p>
+        </div>
+
+        <!-- Error -->
+        <div id="state-error" class="state state-error hidden" role="alert">
+          <span class="state-icon" aria-hidden="true">⚠️</span>
+          <p id="error-message">Something went wrong.</p>
+          <button class="btn btn-outline" id="retry-btn">Try again</button>
+        </div>
+
+        <!-- Result cards -->
+        <div id="state-result" class="hidden">
+          <h2 class="results-title">Request Analysis</h2>
+
+          <div class="cards-grid">
+            <div class="result-card">
+              <span class="result-card-label">Category</span>
+              <span class="result-card-value" id="res-category">—</span>
+              <span class="result-card-confidence" id="res-category-conf"></span>
+            </div>
+            <div class="result-card">
+              <span class="result-card-label">Priority</span>
+              <span class="result-card-value" id="res-priority">—</span>
+              <span class="result-card-confidence" id="res-priority-conf"></span>
+              <span class="priority-badge" id="res-priority-badge"></span>
+            </div>
+            <div class="result-card">
+              <span class="result-card-label">Assigned Team</span>
+              <span class="result-card-value" id="res-team">—</span>
+              <span class="result-card-confidence" id="res-team-conf"></span>
+            </div>
+            <div class="result-card">
+              <span class="result-card-label">Escalation</span>
+              <span class="result-card-value" id="res-escalate">—</span>
+              <span class="result-card-confidence" id="res-escalate-conf"></span>
+            </div>
+          </div>
+
+          <div class="confidence-bar-wrap">
+            <div class="confidence-bar-header">
+              <span class="confidence-label">Overall confidence</span>
+              <span class="confidence-value" id="res-confidence">—</span>
+            </div>
+            <div class="confidence-track" aria-hidden="true">
+              <div class="confidence-fill" id="res-confidence-fill"></div>
+            </div>
+          </div>
+
+          <p class="result-footer">
+            Decisions made by <strong>Jev</strong> (TypeSafe System One model) via OpenRouter ·
+            <a href="https://openrouter.ai/docs/guides/community/jev" target="_blank" rel="noopener">Learn more</a>
+          </p>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+      <p>
+        Reference application ·
+        <a href="https://github.com/cloudways" target="_blank" rel="noopener">Cloudways</a> ·
+        Node.js + Express + <a href="https://openrouter.ai/docs/guides/community/jev" target="_blank" rel="noopener">Jev</a>
+      </p>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
