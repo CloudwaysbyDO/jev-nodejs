@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
  
 app.use(express.json());
  
-// ─── Jev integration ──────────────────────────────────────────────────────────
+app.get('/health', (req, res) => res.json({ ok: true, port: PORT }));
  
 const JEV_ENDPOINT = 'https://openrouter.ai/api/alpha/decisions';
 const JEV_MODEL = '~typesafe/jev-latest';
@@ -20,7 +20,7 @@ function buildQuestions() {
     category: {
       type: 'choice',
       instructions: 'What is the primary category of this client request?',
-      options: [
+      criteria: [
         { id: 'technical_issue', label: 'Technical Issue' },
         { id: 'design_change',   label: 'Design Change'   },
         { id: 'content_change',  label: 'Content Change'  },
@@ -33,7 +33,7 @@ function buildQuestions() {
     priority: {
       type: 'choice',
       instructions: 'What is the urgency of this client request?',
-      options: [
+      criteria: [
         { id: 'low',      label: 'Low'      },
         { id: 'medium',   label: 'Medium'   },
         { id: 'high',     label: 'High'     },
@@ -43,7 +43,7 @@ function buildQuestions() {
     team: {
       type: 'choice',
       instructions: 'Which team or role should handle this request?',
-      options: [
+      criteria: [
         { id: 'developer',       label: 'Developer'       },
         { id: 'designer',        label: 'Designer'        },
         { id: 'content',         label: 'Content'         },
@@ -62,8 +62,8 @@ function parseAnswers(answers) {
   const p = answers.priority;
   const t = answers.team;
   const e = answers.escalate;
-  const pct = n => Math.round(n * 100);
-  const label = id => id.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+  const pct   = n  => Math.round(n * 100);
+  const label  = id => id.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
   return {
     category:  { id: c.choice, label: label(c.choice), confidence: pct(c.confidence) },
     priority:  { id: p.choice, label: label(p.choice), confidence: pct(p.confidence) },
@@ -74,15 +74,13 @@ function parseAnswers(answers) {
 }
  
 async function handleAnalyze(req, res) {
-  // Accept message from query string (GET) or body (POST)
   const message = (req.query.message || (req.body && req.body.message) || '').trim();
- 
   if (!message) return res.status(400).json({ error: 'Request message is required.' });
   if (message.length > 4000) return res.status(400).json({ error: 'Message too long.' });
  
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey || apiKey === 'your_openrouter_api_key_here') {
-    return res.status(500).json({ error: 'API key not configured on the server.' });
+    return res.status(500).json({ error: 'API key not configured.' });
   }
  
   try {
@@ -108,109 +106,28 @@ async function handleAnalyze(req, res) {
     clearTimeout(timer);
  
     const text = await response.text();
-    console.log('[jev] status:', response.status, '| body:', text.slice(0, 300));
+    console.log('[jev] status:', response.status);
  
     if (!response.ok) {
       if (response.status === 401) return res.status(401).json({ error: 'Invalid API key.' });
-      if (response.status === 429) return res.status(429).json({ error: 'Rate limit. Try again in a moment.' });
-      return res.status(502).json({ error: `Jev returned ${response.status}: ${text.slice(0, 150)}` });
+      if (response.status === 429) return res.status(429).json({ error: 'Rate limit. Try again shortly.' });
+      return res.status(502).json({ error: `Jev error ${response.status}: ${text.slice(0, 200)}` });
     }
  
     const json = JSON.parse(text);
     return res.json({ result: parseAnswers(json.answers), usage: json.usage ?? null });
  
   } catch (err) {
-    if (err.name === 'AbortError') return res.status(504).json({ error: 'Jev timed out. Please try again.' });
+    if (err.name === 'AbortError') return res.status(504).json({ error: 'Request timed out.' });
     console.error('[jev] error:', err.message);
     return res.status(502).json({ error: err.message });
   }
 }
  
-// ── Routes ─────────────────────────────────────────────────────────────────────
+app.get('/analyze',  handleAnalyze);
+app.post('/analyze', handleAnalyze);
  
-// Health check
-app.get('/health', (req, res) => res.json({ ok: true, port: PORT }));
-
-app.get('/querytest', (req, res) => {
-  res.json({ received: req.query.message || 'nothing' });
-});
-app.get('/analyzetest', async (req, res) => {
-  const message = req.query.message || 'nothing';
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  try {
-    const response = await fetch('https://openrouter.ai/api/alpha/decisions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: '~typesafe/jev-latest',
-        state: message,
-        questions: {
-          category: {
-            type: 'choice',
-            instructions: 'What category is this?',
-            options: [
-              { id: 'technical', label: 'Technical' },
-              { id: 'other', label: 'Other' }
-            ]
-          }
-        }
-      })
-    });
-    const text = await response.text();
-    res.json({ status: response.status, body: text });
-  } catch (err) {
-    res.json({ error: err.message });
-  }
-});
-app.get('/slowtest', async (req, res) => {
-  await new Promise(r => setTimeout(r, 3000));
-  res.json({ ok: true, waited: '3 seconds' });
-});
-
-app.get('/jevtest', async (req, res) => {
-  try {
-    const response = await fetch('https://openrouter.ai/api/alpha/decisions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: '~typesafe/jev-latest',
-        state: 'test',
-        questions: {
-          test: { type: 'noul', instructions: 'Is this a test?' }
-        }
-      })
-    });
-    const text = await response.text();
-    res.json({ status: response.status, body: text });
-  } catch (err) {
-    res.json({ error: err.message, name: err.name });
-  }
-});
- 
-// The index page intercepts ?analyze=1 and returns JSON instead of HTML
-// This works because nginx DOES proxy the root path to Node.js
-app.get('/', (req, res, next) => {
-  if (req.query.analyze === '1') return handleAnalyze(req, res);
-  next(); // serve index.html normally
-});
- 
-// Also keep dedicated routes for direct testing
-app.get('/analyze/:msg', async (req, res) => {
-  req.query.message = req.params.msg;
-  return handleAnalyze(req, res);
-});
-app.get('/jevtest2', handleAnalyze);
-app.post('/jevtest2', handleAnalyze);
- 
-// Static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
- 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
