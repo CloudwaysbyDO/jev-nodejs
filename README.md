@@ -303,10 +303,13 @@ Fork this repository, or create your own repo and push the code. A **private rep
 
 ### 3.2 Create a Node.js application on Cloudways
 
-1. Log in at [platform.cloudways.com](https://platform.cloudways.com).
-2. Click **Add Server** (or use an existing one).
-3. Under **Application**, select **Node.js**.
-4. Name the app (e.g. `agency-triage`), pick a provider and server size — the smallest tier is plenty for this demo — and launch.
+1. Log in at [unified.cloudways.com](https://unified.cloudways.com).
+2. Dashboard, on the left side bar, click on **Velocity**. Then Click **Add Server**. Here you need to chose the plan and click **Continue**
+<img width="1905" height="902" alt="image" src="https://github.com/user-attachments/assets/95369bfa-3429-4ebe-b3a5-849f7b718259" /> 
+3. Name the server and select the region where you want to deploy the server.
+4. Now Click **Continue**. 
+<img width="1670" height="727" alt="image" src="https://github.com/user-attachments/assets/86f20614-5f00-4159-bf30-8f7171a0d907" />
+5. Your server will be deployed in few minutes with NodeJS application.
 
 ### 3.3 Connect your GitHub repository
 
@@ -415,59 +418,6 @@ The entire integration — questions, API call, response parsing, error handling
 
 ---
 
-## Security notes
-
-- **`OPENROUTER_API_KEY`** exists only in the server environment. It is read via `process.env` and never included in any HTTP response.
-- **`.env`** is in `.gitignore` and must never be committed. Only `.env.example` (with a placeholder) is committed.
-- **If a key is ever committed by accident** — even to a private repo — revoke it at [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys), create a new one, and update it in Cloudways → Environment Variables.
-- User input is validated for presence, type, and a 4,000-character limit before anything is sent to Jev.
-- Server-side errors are logged without exposing secrets. The browser receives only a user-friendly message.
-
----
-
-## Troubleshooting
-
-Real issues, in the order you're most likely to hit them:
-
-### `400 — "Invalid input: expected record, received array"` from Jev
-
-Your `criteria` is an array. It must be an object: `{ option_id: 'description', ... }`. See [How the integration works](#how-the-integration-works). The same error appears as `expected record, received undefined` if a required field like `criteria` is missing entirely.
-
-### The frontend shows `Unexpected token '<', "<!DOCTYPE"... is not valid JSON`
-
-The browser called the API but received an HTML page instead of JSON. Causes, most common first:
-
-1. **The Node.js process crashed or isn't running the current code** — check the deployment succeeded and hit `/health` to confirm the process is up.
-2. **A stale cached `app.js` in the browser** — hard-refresh with `Ctrl+Shift+R`, or check in DevTools → Network which URL the frontend actually requested.
-3. **Frontend and backend route mismatch** — the URL in `public/app.js` must match the route registered in `src/server.js`.
-
-### `502 Bad Gateway`
-
-The platform's proxy couldn't get a response from your Node.js process. Check in order:
-
-1. **Is the process alive?** Open `/health`. If that also returns 502, the app is crash-looping — check the Cloudways application logs for the exception.
-2. **Entry File setting** — must be `src/server.js`, not `npm run start`.
-3. **An unhandled rejection is killing the process.** Wrap the entire request handler in `try/catch` (this repo's `server.js` already does). An async error outside a `try/catch` takes down the whole Node.js process, and every request after that returns 502 until PM2 restarts it.
-4. **A `PORT` environment variable you added manually** — remove it and redeploy; Cloudways sets the port itself.
-
-### `401 Unauthorized` from Jev
-
-The key is missing, mistyped, or revoked. Verify it in Cloudways → Environment Variables (no leading/trailing spaces), then **Save & Redeploy** — environment variable changes require a redeploy to take effect.
-
-### `429 Too Many Requests`
-
-You've hit a rate limit. Wait a moment and retry. Current limits are listed on the [Jev model page](https://openrouter.ai/typesafe/jev-1.13).
-
-### Deployment succeeds but old code still runs
-
-GitHub file edits sometimes don't get committed fully (easy to miss the Commit button on multi-file edits). Verify the changed lines are actually visible in the repo on github.com, then check that a new deployment ran after that commit.
-
-### App works locally but not on Cloudways
-
-Almost always one of three things: Entry File not set to `src/server.js`, the `OPENROUTER_API_KEY` environment variable missing on Cloudways, or a manually-added `PORT` variable. Those three settings cover the platform-specific configuration completely.
-
----
-
 ## What this demo proves
 
 1. **A Node.js/Express application runs on [Cloudways Managed Node.js Hosting](https://www.cloudways.com/en/velocity.php).**
@@ -475,19 +425,6 @@ Almost always one of three things: Entry File not set to `src/server.js`, the `O
 3. **Jev turns unstructured text into structured, typed decisions.**
 4. **Application code can branch on those decisions** — display them, route a ticket, trigger a workflow.
 5. **Another developer can clone this repo, add an API key, deploy to Cloudways, and have it working in under 30 minutes.**
-
----
-
-## Future extensions
-
-This reference application is intentionally minimal. Possible next steps:
-
-- **Act on the decisions** — when `escalate` is true, post to a Slack webhook or create a ticket. The typed output makes this a one-line `if`.
-- **Add a Score question** — e.g. estimated effort on a `trivial → major-project` scale ([Score primitive docs](https://docs.typesafe.ai/primitives/score)).
-- **Persist results** — add a database on the same Cloudways server and build a triage-history dashboard.
-- **Batch mode** — pipe an email inbox or contact-form feed through `/analyze` and auto-label everything.
-- **Confidence thresholds** — route decisions below, say, 70% confidence to a human instead of acting automatically ([reading confidence](https://docs.typesafe.ai/confidence)).
-- **Add an AI agent** — use Jev as the decision gate inside a larger automated workflow.
 
 ---
 
