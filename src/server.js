@@ -188,8 +188,8 @@ async function handleAnalyze(req, res) {
 }
 
 // Register both GET and POST so it works on Cloudways (GET) and locally (POST)
-app.get('/api/analyze', handleAnalyze);
-app.post('/api/analyze', handleAnalyze);
+app.get('/triage', handleAnalyze);
+app.post('/triage', handleAnalyze);
 
 // ─── Static files ─────────────────────────────────────────────────────────────
 
