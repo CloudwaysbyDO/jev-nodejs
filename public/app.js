@@ -69,7 +69,7 @@ async function analyze() {
  
   try {
     // Call root path with ?analyze=1 — nginx forwards root to Node.js
-    const url = '/?analyze=1&message=' + encodeURIComponent(message);
+    const url = '/api?message=' + encodeURIComponent(message);
     const res = await fetch(url);
     const data = await res.json();
  
