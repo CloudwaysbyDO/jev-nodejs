@@ -68,13 +68,10 @@ async function analyze() {
   showState('loading');
  
   try {
-    // Call root path with ?analyze=1 — nginx forwards root to Node.js
-    const url = '/jevtest2?message=' + encodeURIComponent(message);
+    const url = '/analyze?message=' + encodeURIComponent(message);
     const res = await fetch(url);
     const data = await res.json();
- 
     if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
- 
     renderResult(data.result);
     showState('result');
   } catch (err) {
