@@ -97,7 +97,7 @@ async function handleAnalyze(req, res) {
       },
       body: JSON.stringify({
         model: JEV_MODEL,
-        state: 'You are triaging a client support request for a digital web agency.\n\nClient message:\n\n' + message,
+        state: message,
         questions: buildQuestions(),
       }),
       signal: controller.signal,
