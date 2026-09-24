@@ -139,8 +139,8 @@ app.get('/', (req, res, next) => {
 });
  
 // Also keep dedicated routes for direct testing
-app.get('/triage',      handleAnalyze);
-app.post('/triage',     handleAnalyze);
+app.get('/api', handleAnalyze);
+app.post('/api', handleAnalyze);
  
 // Static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
