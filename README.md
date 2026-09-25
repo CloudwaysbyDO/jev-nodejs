@@ -430,7 +430,7 @@ The entire integration — questions, API call, response parsing, error handling
 2. **The application communicates with Jev through the OpenRouter Decisions API.**
 3. **Jev turns unstructured text into structured, typed decisions.**
 4. **Application code can branch on those decisions** — display them, route a ticket, trigger a workflow.
-5. **Another developer can clone this repo, add an API key, deploy to Cloudways, and have it working in under 30 minutes.**
+5. **Another developer can clone this repo, add an API key, deploy to Cloudways, and have it working**
 
 ---
 
