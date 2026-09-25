@@ -1,4 +1,4 @@
-<img width="1060" height="667" alt="image" src="https://github.com/user-attachments/assets/1b8049da-797e-4c86-874a-3adcd8b905c5" /># Agency Request Triage — Jev on Cloudways Node.js Hosting
+# Agency Request Triage — Jev on Cloudways Node.js Hosting
 
 A reference Node.js application that proves a simple point: **you can run an AI-powered application on [Cloudways Managed Node.js Hosting](https://www.cloudways.com/en/velocity.php), using [Jev](https://openrouter.ai/docs/guides/community/jev) — a structured decision model — through the OpenRouter API.**
 
@@ -317,7 +317,7 @@ Fork this repository, or create your own repo and push the code. A **private rep
 2. Connect your GitHub account and select your repository.
 3. Set the branch to **`main`**.
 4. Enable **Auto-deployment** — every push to `main` will then deploy automatically. Click **Continue.**
-<img width="1060" height="667" alt="image" src="https://github.com/user-attachments/assets/531870b4-3369-43a4-a172-4eef7785c042" />
+<img width="1060" height="667" alt="image" src="https://github.com/user-attachments/assets/1b8049da-797e-4c86-874a-3adcd8b905c5" />
 
 ### 3.4 Configure the build settings
 
