@@ -374,6 +374,9 @@ Browser → Express on Cloudways → Jev on OpenRouter → Express → Browser
 ```
 
 ---
+Here you can see the sample app that we built 
+<img width="943" height="781" alt="image" src="https://github.com/user-attachments/assets/4da542bf-17a7-44e9-948d-b4e8952eb23c" />
+
 
 ## Step 4 — Test the application
 
@@ -394,6 +397,8 @@ Also worth testing:
 - **API-level testing** → `GET /analyze?message=...` returns raw JSON; `GET /health` confirms the process is up
 
 ---
+Here you can see the result based on the decision made by Jev
+<img width="946" height="1470" alt="Agency Triage App" src="https://github.com/user-attachments/assets/aa42bf58-d593-4b11-9d75-223d9da8d40e" />
 
 ## Project structure
 
