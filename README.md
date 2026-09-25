@@ -450,5 +450,3 @@ MIT — see [LICENSE](LICENSE).
 - [OpenRouter API keys](https://openrouter.ai/settings/keys)
 
 ---
-
-*Built by [Danish Naseer](https://www.linkedin.com/in/hdanishnaseer/)*
